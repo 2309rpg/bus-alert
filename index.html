@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>차량 환경 개선 요청</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f8f9fa; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .card { background: #ffffff; width: 100%; max-width: 400px; padding: 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .header { text-align: center; margin-bottom: 24px; }
+        .header h2 { font-size: 20px; color: #111; margin-bottom: 6px; }
+        .seat-badge { display: inline-block; background: #eef2ff; color: #4f46e5; font-weight: 700; font-size: 18px; padding: 6px 16px; border-radius: 20px; margin-top: 8px; }
+        
+        .section-title { font-size: 14px; font-weight: 600; color: #6b7280; margin-bottom: 10px; }
+        
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
+        .option-btn { background: #f3f4f6; border: 2px solid #e5e7eb; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 600; color: #374151; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .option-btn.active { background: #eef2ff; border-color: #4f46e5; color: #4f46e5; }
+        
+        .message-box { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; resize: none; height: 80px; margin-bottom: 20px; outline: none; }
+        .message-box:focus { border-color: #4f46e5; }
+        
+        .submit-btn { width: 100%; background: #4f46e5; color: white; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .submit-btn:active { background: #4338ca; }
+        .submit-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+        
+        .success-screen { display: none; text-align: center; padding: 40px 0; }
+        .success-screen h3 { font-size: 22px; color: #10b981; margin-bottom: 10px; }
+        .success-screen p { color: #6b7280; font-size: 15px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+<div class="card" id="mainCard">
+    <div class="header">
+        <h2>차량 환경 개선 요청</h2>
+        <div class="seat-badge" id="seatDisplay">좌석 확인 중...</div>
+    </div>
+
+    <div class="section-title">요청 사항을 선택해주세요</div>
+    <div class="options-grid">
+        <div class="option-btn" onclick="selectOption(this, '너무 더워요 🥵')">🥵 너무 더워요</div>
+        <div class="option-btn" onclick="selectOption(this, '너무 추워요 🥶')">🥶 너무 추워요</div>
+        <div class="option-btn" onclick="selectOption(this, '공기가 답답해요 💨')">💨 공기가 답답해요 (환기)</div>
+        <div class="option-btn" onclick="selectOption(this, '습해요 💧')">💧 습해요</div>
+    </div>
+
+    <div class="section-title">추가 메시지 (선택사항)</div>
+    <textarea class="message-box" id="customMessage" placeholder="기사님께 전달할 세부 내용이 있다면 입력하세요"></textarea>
+
+    <button class="submit-btn" id="submitBtn" onclick="sendRequest()">기사님께 전송하기</button>
+</div>
+
+<div class="card success-screen" id="successCard">
+    <h3>✅ 전송 완료</h3>
+    <p>기사님께 요청이 전달되었습니다.<br>안전 운행 중 공조 조치가 이루어집니다.</p>
+</div>
+
+<script>
+    // URL 쿼리스트링에서 좌석 번호 추출 (예: ?seat=3B)
+    const urlParams = new URLSearchParams(window.location.search);
+    const seatNumber = (urlParams.get('seat') || '미지정').toUpperCase().trim();
+    
+    document.getElementById('seatDisplay').innerText = `${seatNumber} 좌석`;
+
+    let selectedType = "";
+
+    function selectOption(element, typeText) {
+        // 스마트폰 햅틱(진동) 피드백 적용 (지원 기기 한정)
+        if (navigator.vibrate) navigator.vibrate(40);
+        
+        document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('active'));
+        element.classList.add('active');
+        selectedType = typeText;
+    }
+
+    function sendRequest() {
+        if (!selectedType) {
+            alert("요청 사항을 하나 이상 선택해주세요!");
+            return;
+        }
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "전송 중...";
+
+        if (navigator.vibrate) navigator.vibrate([30, 50, 30]); // 전송 버튼 클릭 시 미세한 진동
+
+        const customMsg = document.getElementById('customMessage').value;
+
+        // ★ 검증된 GAS 웹 앱 URL 입력 ★
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxwrD51HxURUajloDPusNf5gZWNsAMdeq096O5fmVd5dOOQdg0Ev0obEXL8NfKafDnL4g/exec";
+
+        const payload = {
+            seat: seatNumber,
+            type: selectedType,
+            message: customMsg
+        };
+
+        fetch(GAS_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        }).then(() => {
+            document.getElementById('mainCard').style.display = 'none';
+            document.getElementById('successCard').style.display = 'block';
+        }).catch(err => {
+            alert("전송 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+            btn.disabled = false;
+            btn.innerText = "기사님께 전송하기";
+        });
+    }
+</script>
+
+</body>
+</html>
