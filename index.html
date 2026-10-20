@@ -38,7 +38,8 @@
         <div class="seat-badge" id="seatDisplay">좌석 확인 중...</div>
     </div>
 
-    <div class="section-title">요청 사항을 선택해주세요 (선택사항)</div>
+    <!-- 수정됨: 요청 사항은 기본 항목 -->
+    <div class="section-title">요청 사항을 선택해주세요</div>
     <div class="options-grid">
         <div class="option-btn" onclick="selectOption(this, '더워요 🥵')">🥵 더워요</div>
         <div class="option-btn" onclick="selectOption(this, '추워요 🥶')">🥶 추워요</div>
@@ -46,7 +47,8 @@
         <div class="option-btn" onclick="selectOption(this, '습해요 💧')">💧 습해요</div>
     </div>
 
-    <div class="section-title">추가 메시지</div>
+    <!-- 수정됨: 추가 메시지가 선택사항 -->
+    <div class="section-title">추가 메시지 (선택사항)</div>
     <textarea class="message-box" id="customMessage" placeholder="기사님께 전달할 세부 내용이 있다면 입력하세요"></textarea>
 
     <button class="submit-btn" id="submitBtn" onclick="sendRequest()">기사님께 전송하기</button>
@@ -69,7 +71,7 @@
     function selectOption(element, typeText) {
         if (navigator.vibrate) navigator.vibrate(40);
         
-        // 이미 선택된 것을 다시 누르면 해제되도록 토글 기능 추가
+        // 이미 선택된 것을 다시 누르면 해제되도록 토글 기능 유지
         if (element.classList.contains('active')) {
             element.classList.remove('active');
             selectedType = "";
@@ -84,7 +86,7 @@
     function sendRequest() {
         const customMsg = document.getElementById('customMessage').value.trim();
 
-        // 버튼도 안 골랐고 메시지도 비어있을 때만 막기
+        // 버튼도 안 골랐고 메시지도 비어있을 때만 막기 (유연한 전송 로직 유지)
         if (!selectedType && !customMsg) {
             alert("요청 사항을 선택하시거나 메시지를 입력해주세요!");
             return;
