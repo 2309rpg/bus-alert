@@ -15,15 +15,43 @@
         .section-title { font-size: 14px; font-weight: 600; color: #6b7280; margin-bottom: 10px; }
         
         .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
-        .option-btn { background: #f3f4f6; border: 2px solid #e5e7eb; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 600; color: #374151; text-align: center; cursor: pointer; transition: all 0.2s; }
-        .option-btn.active { background: #eef2ff; border-color: #4f46e5; color: #4f46e5; }
+        
+        /* [UX 마이크로 인터랙션 적용] 버튼 터치 시 쑥 눌리는 효과 및 애니메이션 설정 */
+        .option-btn { 
+            background: #f3f4f6; 
+            border: 2px solid #e5e7eb; 
+            border-radius: 12px; 
+            padding: 14px; 
+            font-size: 16px; 
+            font-weight: 600; 
+            color: #374151; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: transform 0.1s ease, background 0.2s, border-color 0.2s; 
+            -webkit-tap-highlight-color: transparent; /* 모바일 터치 시 회색 음영 제거 */
+        }
+        .option-btn:active { 
+            transform: scale(0.96); /* 누르는 순간 물리적으로 압착되는 느낌 */
+        }
+        
+        @keyframes springPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.04); } /* 살짝 커졌다가 */
+            100% { transform: scale(1); }   /* 제자리로 탁 안착 */
+        }
+        .option-btn.active { 
+            background: #eef2ff; 
+            border-color: #4f46e5; 
+            color: #4f46e5; 
+            animation: springPop 0.25s ease-out; /* 선택 시 튕기는 스프링 효과 */
+        }
         
         .message-box { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; resize: none; height: 80px; margin-bottom: 20px; outline: none; }
         .message-box:focus { border-color: #4f46e5; }
         
-        .submit-btn { width: 100%; background: #4f46e5; color: white; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-        .submit-btn:active { background: #4338ca; }
-        .submit-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+        .submit-btn { width: 100%; background: #4f46e5; color: white; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+        .submit-btn:active { background: #4338ca; transform: scale(0.98); }
+        .submit-btn:disabled { background: #9ca3af; cursor: not-allowed; transform: none; }
         
         .success-screen { display: none; text-align: center; padding: 40px 0; }
         .success-screen h3 { font-size: 22px; color: #10b981; margin-bottom: 10px; }
@@ -38,7 +66,6 @@
         <div class="seat-badge" id="seatDisplay">좌석 확인 중...</div>
     </div>
 
-    <!-- 수정됨: 요청 사항은 기본 항목 -->
     <div class="section-title">요청 사항을 선택해주세요</div>
     <div class="options-grid">
         <div class="option-btn" onclick="selectOption(this, '더워요 🥵')">🥵 더워요</div>
@@ -47,7 +74,6 @@
         <div class="option-btn" onclick="selectOption(this, '습해요 💧')">💧 습해요</div>
     </div>
 
-    <!-- 수정됨: 추가 메시지가 선택사항 -->
     <div class="section-title">추가 메시지 (선택사항)</div>
     <textarea class="message-box" id="customMessage" placeholder="기사님께 전달할 세부 내용이 있다면 입력하세요"></textarea>
 
@@ -69,9 +95,10 @@
     let selectedType = "";
 
     function selectOption(element, typeText) {
+        // 안드로이드 햅틱 진동 피드백
         if (navigator.vibrate) navigator.vibrate(40);
         
-        // 이미 선택된 것을 다시 누르면 해제되도록 토글 기능 유지
+        // 이미 선택된 것을 다시 누르면 해제되도록 토글 기능
         if (element.classList.contains('active')) {
             element.classList.remove('active');
             selectedType = "";
@@ -86,7 +113,7 @@
     function sendRequest() {
         const customMsg = document.getElementById('customMessage').value.trim();
 
-        // 버튼도 안 골랐고 메시지도 비어있을 때만 막기 (유연한 전송 로직 유지)
+        // 버튼도 안 골랐고 메시지도 비어있을 때만 막기
         if (!selectedType && !customMsg) {
             alert("요청 사항을 선택하시거나 메시지를 입력해주세요!");
             return;
@@ -98,7 +125,7 @@
 
         if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
 
-        // 버튼을 안 골랐다면 메시지만 전송되도록 기본 타입 지정
+        // 버튼을 안 골랐다면 메시지 전송용 기본 타입 지정
         const finalType = selectedType || "기타 요청 (메시지 참조)";
 
         // ★ 검증된 GAS 웹 앱 URL 입력 ★
