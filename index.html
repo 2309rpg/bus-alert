@@ -154,6 +154,23 @@
         });
     }
 </script>
+<script>
+    // 원본 스크립트를 전혀 수정하지 않고, 독립된 스크립트 블록으로 접속 로그만 전송
+    const ACCESS_GAS_URL = "https://script.google.com/macros/s/AKfycbxwrD51HxURUajloDPusNf5gZWNsAMdeq096O5fmVd5dOOQdg0Ev0obEXL8NfKafDnL4g/exec";
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const seatNumber = (urlParams.get('seat') || '미지정').toUpperCase().trim();
+
+        const accessData = {
+            seat: seatNumber,
+            ua: navigator.userAgent
+        };
+        
+        const logQuery = new URLSearchParams(accessData).toString();
+        fetch(`${ACCESS_GAS_URL}?${logQuery}`, { mode: 'no-cors' }).catch(() => {});
+    });
+</script>
 
 </body>
 </html>
